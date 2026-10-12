@@ -13,7 +13,7 @@ Milli Emlak uygulamasının **OCR Stüdyo** modülü de buradan gelir: Milli Eml
 - **Toplu isimlendirme:** Klasördeki PDF'lerin ilk sayfasından *Adı Soyadı* ve *T.C. Kimlik No* okunur (TC doğrulamalı), dosyalar "Ad Soyad - TC" biçiminde yeniden adlandırılır (İsim+TC / yalnız isim / yalnız TC).
 - **Ön izleme:** Klasör seçilince PDF listesi çıkar; ada tıklayınca işlemeden önce sayfalar görülür, istenmeyen dosyanın işareti kaldırılır (işlenmez).
 - **Klasör Gözat:** PDF'leri tek tek gör, bilgileri düzelt, alan seçip yalnız o bölgeyi oku, kaydet / geri al, incelendi işareti, tekrarlayan TC süzgeci, listeyi Excel'e aktar.
-- **Cevabi yazı + tutanak:** Gelen yazının tarih, sayı ve kurumunu okuyup cevabi yazı ve tutanak taslağı hazırlar. A4 kâğıt görünümünde, sekmeli (Cevabi yazı / Tutanak); tutanak A4'e 2 adet basılır, tam ortada kesik çizgi; imza adları/unvanları ve tarih düzenlenir, hatırlanır.
+- **Cevabi yazı + tutanak:** Gelen yazının tarih, sayı ve kurumunu okuyup cevabi yazı ve tutanak taslağı hazırlar. A4 kâğıt görünümünde, sekmeli (Cevabi yazı / Tutanak); tutanak A4'e 2 adet basılır, tam ortada kesik çizgi; imza adları/unvanları düzenlenir, hatırlanır; tarih son cümlenin sonuna aynı satıra eklenir.
 - **Tablolar:** Sayfadaki tabloları bulur; Excel / Word / panoya aktarır.
 - **Ek alanlar:** İstediğin başlıkları yaz (ör. *Yüzölçümü, Ada / Parsel, Mahalle*); her belgede o başlığın değeri bulunur, sonuç tablosunda sütun olur, Excel'e aktarılır, istersen dosya adına eklenir. Başlıklar hatırlanır.
 
@@ -37,7 +37,8 @@ Dosyalar yalnız cihazında işlenir; hiçbir sunucuya gönderilmez.
 
 ## Sürüm
 
-**1.7** — Cevabi yazı + tutanak sayfası yenilendi: A4 kâğıt, sekmeler, tutanak A4'e 2 adet (ortada kesik çizgi), imza alanı.  
+**1.8** — Tutanakta tarih son cümlenin sonunda, noktadan sonra bir boşlukla aynı satırda (…imza altına alınmıştır. 19.01.2026); ekranda ve çıktıda.  
+1.7 — Cevabi yazı + tutanak sayfası yenilendi: A4 kâğıt, sekmeler, tutanak A4'e 2 adet (ortada kesik çizgi), imza alanı.  
 1.6 — Bilgisayarda oluşturulmuş PDF'lerin metni □□ / bozuk görünmüyor (yazı tipi sorunu giderildi; bu belgelerin OCR'ı da düzeldi); klasör seçilince dosya listesi + ön izleme + işleme dahil/hariç.  
 1.5 — Klasör İşleri OCR Stüdyo tasarımında (sade kartlar, aynı renkler, koyu tema); ek alanlar; sonuçları Excel'e aktarma; Klasör Gözat'ta dosya açılınca otomatik okuma.  
 1.4 — Taranmış PDF'lerde tarayıcının (ör. Canon MF Toolbox) gömdüğü görünmez, hatalı OCR katmanı kullanılmaz; sayfa OCR Stüdyo motoruyla okunur. Dijital PDF'lerin metni aynen kullanılır.  
