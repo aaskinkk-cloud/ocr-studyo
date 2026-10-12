@@ -35,5 +35,6 @@ Dosyalar yalnız cihazında işlenir; hiçbir sunucuya gönderilmez.
 
 ## Sürüm
 
-**1.1** — Klasör İşleri eklendi (PDF toplu isimlendirme, Klasör Gözat, cevabi yazı + tutanak, tablo tarama).  
+**1.2** — Klasör İşleri: ad sanılan cümle parçaları ("tapu kütüklerinin", "hanesinde belirtilen" vb.) elenir; emin olunamayan ad boş kalır, dosya yanlış adla adlandırılmaz.  
+1.1 — Klasör İşleri eklendi (PDF toplu isimlendirme, Klasör Gözat, cevabi yazı + tutanak, tablo tarama).  
 1.0 — GitHub'a taşındı (Milli Emlak 124 ile birlikte).
