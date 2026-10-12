@@ -37,7 +37,8 @@ Dosyalar yalnız cihazında işlenir; hiçbir sunucuya gönderilmez.
 
 ## Sürüm
 
-**1.8** — Tutanakta tarih son cümlenin sonunda, noktadan sonra bir boşlukla aynı satırda (…imza altına alınmıştır. 19.01.2026); ekranda ve çıktıda.  
+**1.9** — Tutanak başlığı ortalı, büyük (16 pt) ve kalın; ekranda ve çıktıda. Kopyalanınca metnin başına eklenir.  
+1.8 — Tutanakta tarih son cümlenin sonunda, noktadan sonra bir boşlukla aynı satırda (…imza altına alınmıştır. 19.01.2026); ekranda ve çıktıda.  
 1.7 — Cevabi yazı + tutanak sayfası yenilendi: A4 kâğıt, sekmeler, tutanak A4'e 2 adet (ortada kesik çizgi), imza alanı.  
 1.6 — Bilgisayarda oluşturulmuş PDF'lerin metni □□ / bozuk görünmüyor (yazı tipi sorunu giderildi; bu belgelerin OCR'ı da düzeldi); klasör seçilince dosya listesi + ön izleme + işleme dahil/hariç.  
 1.5 — Klasör İşleri OCR Stüdyo tasarımında (sade kartlar, aynı renkler, koyu tema); ek alanlar; sonuçları Excel'e aktarma; Klasör Gözat'ta dosya açılınca otomatik okuma.  
