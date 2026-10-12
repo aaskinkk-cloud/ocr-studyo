@@ -37,7 +37,8 @@ Dosyalar yalnız cihazında işlenir; hiçbir sunucuya gönderilmez.
 
 ## Sürüm
 
-**1.11** — Klasör Gözat'ta **İçerikte de ara**: ad dosya adında olmasa da PDF'in içinde geçiyorsa bulunur (tarayıcı OCR katmanı dahil, 1-2 harf OCR hatasına toleranslı, Türkçe karakter/boşluk duyarsız); okunan metin cihazda saklanır; metni olmayan PDF'ler istenirse OCR'lanır. Ön izleme penceresinin Kapat düğmesi düzeldi. Tutanakta 2. imzacı komisyon üyelerinden seçilir (Hasan AKÇAY / Halil AİŞEOĞLU).  
+**1.12** — Tutanak 2. imzacısı Milli Emlak parametrelerinden (Komisyon Üye 1 / Üye 2 ve unvanları) otomatik gelir, ikisinden biri seçilir. "İçerikte de ara" varsayılan açık; tarama 3 kat paralel, ilerleme liste başlığında.  
+1.11 — Klasör Gözat'ta **İçerikte de ara**: ad dosya adında olmasa da PDF'in içinde geçiyorsa bulunur (tarayıcı OCR katmanı dahil, 1-2 harf OCR hatasına toleranslı, Türkçe karakter/boşluk duyarsız); okunan metin cihazda saklanır; metni olmayan PDF'ler istenirse OCR'lanır. Ön izleme penceresinin Kapat düğmesi düzeldi. Tutanakta 2. imzacı komisyon üyelerinden seçilir (Hasan AKÇAY / Halil AİŞEOĞLU).  
 1.10 — Cevap/tutanak sayfasındaki Yazdır düğmesi çalışıyor (açılır pencere engellenirse sayfa içinden yazdırır); tutanakta imzalar 2 satır yukarıda (tarihle imza arası daraldı).  
 1.9 — Tutanak başlığı ortalı, büyük (16 pt) ve kalın; ekranda ve çıktıda. Kopyalanınca metnin başına eklenir.  
 1.8 — Tutanakta tarih son cümlenin sonunda, noktadan sonra bir boşlukla aynı satırda (…imza altına alınmıştır. 19.01.2026); ekranda ve çıktıda.  
