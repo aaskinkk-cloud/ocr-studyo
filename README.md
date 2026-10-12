@@ -14,6 +14,7 @@ Milli Emlak uygulamasının **OCR Stüdyo** modülü de buradan gelir: Milli Eml
 - **Klasör Gözat:** PDF'leri tek tek gör, bilgileri düzelt, alan seçip yalnız o bölgeyi oku, kaydet / geri al, incelendi işareti, tekrarlayan TC süzgeci, listeyi Excel'e aktar.
 - **Cevabi yazı + tutanak:** Gelen yazının tarih, sayı ve kurumunu okuyup cevabi yazı ve tutanak taslağı hazırlar.
 - **Tablolar:** Sayfadaki tabloları bulur; Excel / Word / panoya aktarır.
+- **Ek alanlar:** İstediğin başlıkları yaz (ör. *Yüzölçümü, Ada / Parsel, Mahalle*); her belgede o başlığın değeri bulunur, sonuç tablosunda sütun olur, Excel'e aktarılır, istersen dosya adına eklenir. Başlıklar hatırlanır.
 
 OCR, OCR Stüdyo'nun kendi okuma hattıyla yapılır (internet gerekmez). Klasörde yeniden adlandırma için Chrome/Edge'de **bilgisayardan** aç (telefon tarayıcıları klasöre yazma izni vermez).
 
@@ -35,7 +36,8 @@ Dosyalar yalnız cihazında işlenir; hiçbir sunucuya gönderilmez.
 
 ## Sürüm
 
-**1.4** — Taranmış PDF'lerde tarayıcının (ör. Canon MF Toolbox) gömdüğü görünmez, hatalı OCR katmanı kullanılmaz; sayfa OCR Stüdyo motoruyla okunur. Dijital PDF'lerin metni aynen kullanılır.  
+**1.5** — Klasör İşleri OCR Stüdyo tasarımında (sade kartlar, aynı renkler, koyu tema); ek alanlar; sonuçları Excel'e aktarma; Klasör Gözat'ta dosya açılınca otomatik okuma.  
+1.4 — Taranmış PDF'lerde tarayıcının (ör. Canon MF Toolbox) gömdüğü görünmez, hatalı OCR katmanı kullanılmaz; sayfa OCR Stüdyo motoruyla okunur. Dijital PDF'lerin metni aynen kullanılır.  
 1.3 — Klasör İşleri sayfaları OCR Stüdyo'nun kendi okuma hattıyla okur (görüntü iyileştirme + gömülü Türkçe model + sözlüklü düzeltme): ana ekranda çıkan metnin aynısı. Ad/TC bulunamazsa ikinci geçiş ve eski okuma da denenir.  
 1.2 — Klasör İşleri: ad sanılan cümle parçaları ("tapu kütüklerinin", "hanesinde belirtilen" vb.) elenir; emin olunamayan ad boş kalır, dosya yanlış adla adlandırılmaz.  
 1.1 — Klasör İşleri eklendi (PDF toplu isimlendirme, Klasör Gözat, cevabi yazı + tutanak, tablo tarama).  
