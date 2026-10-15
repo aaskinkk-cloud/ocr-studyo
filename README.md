@@ -19,6 +19,10 @@ Milli Emlak uygulamasının **OCR Stüdyo** modülü de buradan gelir: Milli Eml
 
 OCR, OCR Stüdyo'nun kendi okuma hattıyla yapılır (internet gerekmez). Klasörde yeniden adlandırma için Chrome/Edge'de **bilgisayardan** aç (telefon tarayıcıları klasöre yazma izni vermez).
 
+## Ortak OCR motoru (`motor/`)
+
+`motor/` klasörü OCR Stüdyo'nun gömülü tanıma motorunun ayrı dosyalarıdır (tesseract, çekirdek, Türkçe model). **Okur** taranmış kitapları bu dosyalarla okur; böylece iki uygulama aynı motoru kullanır. OCR Stüdyo kendi kopyasını `index.html` içinde taşımaya devam eder (internetsiz çalışması için). Motor güncellenirse bu klasör de aynı dosyalarla yenilenmeli.
+
 ## Kurulum
 
 Chrome'da adresi aç → menü → **Ana ekrana ekle**. İnternetsiz de çalışır.
