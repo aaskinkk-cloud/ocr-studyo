@@ -37,7 +37,8 @@ Dosyalar yalnız cihazında işlenir; hiçbir sunucuya gönderilmez.
 
 ## Sürüm
 
-**1.12** — Tutanak 2. imzacısı Milli Emlak parametrelerinden (Komisyon Üye 1 / Üye 2 ve unvanları) otomatik gelir, ikisinden biri seçilir. "İçerikte de ara" varsayılan açık; tarama 3 kat paralel, ilerleme liste başlığında.  
+**1.13** — Cevabi yazı ve tutanakta kurum adları resmî yazışma kuralına göre yazılır: tamamı büyük harfle okunan kelimelerin yalnız baş harfi büyük kalır ("ÇAYBAŞI KAYMAKAMLIĞI Milli Emlak Şefliği" → "Çaybaşı Kaymakamlığı Milli Emlak Şefliği"); T.C., A.Ş., DSİ, TEDAŞ gibi kısaltmalar korunur, "ve" küçük yazılır. Metin düzenleme belirginleşti: **✎ Düzenle** düğmesi, kâğıt üzerinde düzenleme çerçevesi, tutanağın alt nüshasına tıklayınca üst nüsha düzenlenir, uzun tutanak kaydırılabilir; **↺ Yeniden oluştur** elle yapılan düzeltmeleri silip metni belgeden tekrar üretir.  
+1.12 — Tutanak 2. imzacısı Milli Emlak parametrelerinden (Komisyon Üye 1 / Üye 2 ve unvanları) otomatik gelir, ikisinden biri seçilir. "İçerikte de ara" varsayılan açık; tarama 3 kat paralel, ilerleme liste başlığında.  
 1.11 — Klasör Gözat'ta **İçerikte de ara**: ad dosya adında olmasa da PDF'in içinde geçiyorsa bulunur (tarayıcı OCR katmanı dahil, 1-2 harf OCR hatasına toleranslı, Türkçe karakter/boşluk duyarsız); okunan metin cihazda saklanır; metni olmayan PDF'ler istenirse OCR'lanır. Ön izleme penceresinin Kapat düğmesi düzeldi. Tutanakta 2. imzacı komisyon üyelerinden seçilir (Hasan AKÇAY / Halil AİŞEOĞLU).  
 1.10 — Cevap/tutanak sayfasındaki Yazdır düğmesi çalışıyor (açılır pencere engellenirse sayfa içinden yazdırır); tutanakta imzalar 2 satır yukarıda (tarihle imza arası daraldı).  
 1.9 — Tutanak başlığı ortalı, büyük (16 pt) ve kalın; ekranda ve çıktıda. Kopyalanınca metnin başına eklenir.  
