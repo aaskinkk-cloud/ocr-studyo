@@ -55,3 +55,8 @@ Dosyalar yalnız cihazında işlenir; hiçbir sunucuya gönderilmez.
 1.2 — Klasör İşleri: ad sanılan cümle parçaları ("tapu kütüklerinin", "hanesinde belirtilen" vb.) elenir; emin olunamayan ad boş kalır, dosya yanlış adla adlandırılmaz.  
 1.1 — Klasör İşleri eklendi (PDF toplu isimlendirme, Klasör Gözat, cevabi yazı + tutanak, tablo tarama).  
 1.0 — GitHub'a taşındı (Milli Emlak 124 ile birlikte).
+
+
+## milliemlak/ klasörü
+
+Milli Emlak uygulamasının telefondan güncelleme paketi (şifreli). OCR Stüdyo ile ilgisi yoktur; ayrıntı `milliemlak/OKUBENI.md`.
