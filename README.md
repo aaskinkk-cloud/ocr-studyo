@@ -60,3 +60,9 @@ Dosyalar yalnız cihazında işlenir; hiçbir sunucuya gönderilmez.
 ## milliemlak/ klasörü
 
 Milli Emlak uygulamasının telefondan güncelleme paketi (şifreli). OCR Stüdyo ile ilgisi yoktur; ayrıntı `milliemlak/OKUBENI.md`.
+
+## me/ — Milli Emlak tam ekran açılış sayfası (20.10.2026)
+
+`https://aaskinkk-cloud.github.io/ocr-studyo/me/` — Milli Emlak (Apps Script) uygulamasını Google'ın uyarı bandı ve
+tarayıcı çubuğu olmadan, ana ekrandan tam ekran açar. **Veri içermez**; uygulama adresi yalnız telefonun tarayıcısında
+(localStorage) saklanır, depoya yazılmaz. Kendi `sw.js`'i yalnız `me/` klasörünü kapsar, önbellek tutmaz.

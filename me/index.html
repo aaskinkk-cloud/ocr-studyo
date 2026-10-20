@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0d47a1">
+<title>Milli Emlak</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg">
+<style>
+:root{--lac:#0d47a1;--zem:#f1f5fb;--metin:#1d2a3d;--soluk:#5b6b82}
+*{box-sizing:border-box}html,body{margin:0;height:100%;background:var(--zem);color:var(--metin);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+#cerceve{position:fixed;inset:0;width:100%;height:100%;border:0;display:none;background:#fff}
+body.acik #cerceve{display:block}body.acik #kurulum{display:none}
+#kurulum{max-width:520px;margin:0 auto;padding:28px 18px}
+h1{font-size:20px;margin:0 0 4px;color:var(--lac)}p{margin:8px 0;color:var(--soluk)}
+label{display:block;font-weight:700;margin:18px 0 6px}
+input{width:100%;font:inherit;padding:12px;border:1.5px solid #c5d3ea;border-radius:12px;background:#fff}
+input:focus{outline:none;border-color:var(--lac)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;font:inherit;font-weight:700;padding:12px 18px;border-radius:12px;border:0;background:var(--lac);color:#fff;cursor:pointer;margin-top:12px;width:100%}
+.btn.ikincil{background:#fff;color:var(--lac);border:1.5px solid #c5d3ea}
+#hata{color:#b3261e;font-weight:600;min-height:1.4em}
+ol{padding-left:20px;color:var(--soluk)}li{margin:4px 0}
+#ipucu{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#fff;border:1px solid #c5d3ea;border-radius:999px;padding:8px 14px;font-size:13px;box-shadow:0 6px 18px rgba(20,40,80,.18);display:none;z-index:5;white-space:nowrap}
+#ipucu a{color:var(--lac);font-weight:700;margin-left:6px}
+</style>
+</head>
+<body>
+<iframe id="cerceve" title="Milli Emlak" allow="clipboard-read; clipboard-write; fullscreen; camera; microphone"></iframe>
+<div id="ipucu">Açılmadı mı? <a id="ipucu-dis" href="#" target="_blank" rel="noopener">Google'da aç</a> <a href="?ayar=1">Adres</a></div>
+<main id="kurulum">
+  <h1>Milli Emlak · tam ekran</h1>
+  <p>Bu sayfa uygulamayı Google'ın uyarı bandı ve tarayıcı çubuğu olmadan açar. Kayıtlar yine Apps Script'ten gelir; bu sayfada veri tutulmaz.</p>
+  <label for="adres">Uygulama adresi</label>
+  <input id="adres" type="url" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://script.google.com/macros/s/…/exec">
+  <div id="hata"></div>
+  <button class="btn" id="kaydet">Kaydet ve aç</button>
+  <button class="btn ikincil" id="yapistir">Panodan yapıştır</button>
+  <p style="margin-top:22px"><b>Adres nerede?</b></p>
+  <ol>
+    <li>Chrome'da Milli Emlak'ı her zamanki gibi açın.</li>
+    <li>Adres çubuğuna dokunun → sağdaki <b>kopyala</b> simgesine basın.</li>
+    <li>Buraya dönüp <b>Panodan yapıştır</b>'a basın.</li>
+  </ol>
+  <p><b>Ana ekrana ekleyin:</b> Chrome menüsü (⋮) → <b>Ana ekrana ekle</b> / <b>Uygulamayı yükle</b>. Simgeden açınca tam ekran gelir.</p>
+  <p style="font-size:13px">Adres yalnız bu telefonun tarayıcısında saklanır; GitHub'a yazılmaz.</p>
+</main>
+<script>
+(function(){
+  var ANAHTAR="me_exec_adres",RE=/^https:\/\/script\.google\.com\/(a\/[^\/]+\/)?macros\/s\/[A-Za-z0-9_-]{20,}\/(exec|dev)(\?.*)?$/;
+  function oku(){try{return localStorage.getItem(ANAHTAR)||""}catch(e){return""}}
+  function yaz(v){try{localStorage.setItem(ANAHTAR,v);return true}catch(e){return false}}
+  function temiz(v){v=String(v||"").trim();var m=v.match(/https:\/\/script\.google\.com\/[^\s"'<>]+/);return m?m[0].replace(/[).,;]+$/,""):v}
+  var q=new URLSearchParams(location.search),gelen=q.get("u");
+  if(gelen){gelen=temiz(gelen);if(RE.test(gelen))yaz(gelen);history.replaceState(null,"",location.pathname)}
+  var adres=oku(),$=function(i){return document.getElementById(i)};
+  function ac(a){var f=$("cerceve");f.src=a;document.body.classList.add("acik");$("ipucu-dis").href=a;
+    var ip=$("ipucu");setTimeout(function(){ip.style.display="block"},9000);setTimeout(function(){ip.style.display="none"},21000)}
+  if(adres&&!q.has("ayar")){ac(adres)}else{$("adres").value=adres}
+  function dene(){var v=temiz($("adres").value);$("adres").value=v;
+    if(!RE.test(v)){$("hata").textContent="Adres https://script.google.com/macros/s/…/exec biçiminde olmalı.";return}
+    $("hata").textContent="";if(!yaz(v)){$("hata").textContent="Tarayıcı adresi saklamadı (gizli sekme olabilir).";}
+    history.replaceState(null,"",location.pathname);ac(v)}
+  $("kaydet").onclick=dene;$("adres").addEventListener("keydown",function(e){if(e.key==="Enter")dene()});
+  $("yapistir").onclick=function(){if(!navigator.clipboard||!navigator.clipboard.readText){$("hata").textContent="Yapıştırma izni yok; kutuya uzun basıp Yapıştır deyin.";return}
+    navigator.clipboard.readText().then(function(t){$("adres").value=temiz(t);dene()}).catch(function(){$("hata").textContent="Pano okunamadı; kutuya uzun basıp Yapıştır deyin."})};
+  if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js",{scope:"./"}).catch(function(){})}
+})();
+</script>
+</body>
+</html>
