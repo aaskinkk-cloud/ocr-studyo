@@ -1,5 +1,4 @@
 <!doctype html><html lang="tr"><head>
-<style>@media (display-mode: fullscreen){#rFull,[data-fs],[data-m="full"],#tamBtn,.tam-ekran{display:none!important}}</style>
 <script>
 /* SESSİZ EKRAN (22.10.2026) — tüm uygulamalarda aynı blok
    1) Tam ekran isteği yalnız tam ekran düğmesiyle gönderilir; kendiliğinden (dokununca/açılışta) gönderilmez → Chrome'un "Tam ekrandan çıkmak için yukarıdan sürükleyip…" uyarısı çıkmaz.
@@ -12,12 +11,12 @@
      Dokununca / açılışta / dosya seçiciden dönünce kendiliğinden tam ekran isteği engellenir → uyarı çıkmaz.
      Kurulu uygulama zaten tam ekran açılır. Video/önizleme gibi tek bir öğenin tam ekranı serbesttir. */
   function kurulu(){try{return matchMedia('(display-mode: fullscreen)').matches}catch(e){return false}}
-  /* v3: ana ekrandan açılan uygulama zaten tam ekrandır; düğmeye basınca da istek gönderilmez (yoksa uyarı + sayfa yeniden dizilir) */
+  /* v4: tam ekran düğmesi her zaman görünür ve çalışır; uygulama izin verdiğinde (window.__tamIzin, ör. kitap açılışı) de istek gider */
   var sonDugme=0,DUGME='[data-fs],[data-m="full"],#rFull,#tamBtn,.tam-ekran,[data-tam],[aria-label*="am ekran"],[title*="am ekran"]';
   document.addEventListener('click',function(e){try{if(e.isTrusted&&e.target.closest&&e.target.closest(DUGME))sonDugme=Date.now()}catch(x){}},true);
   try{['requestFullscreen','webkitRequestFullscreen'].forEach(function(k){var o=Element.prototype[k];if(!o)return;
     Element.prototype[k]=function(){var kok=this===document.documentElement||this===document.body;
-      if(kok&&(kurulu()||Date.now()-sonDugme>1500))return Promise.resolve();return o.apply(this,arguments)}})}catch(e){}
+      if(kok&&Date.now()-Math.max(sonDugme,window.__tamIzin||0)>1500)return Promise.resolve();return o.apply(this,arguments)}})}catch(e){}
   function bos(){}
   function kok(d){try{if(!d||d.__sessiz)return;d.__sessiz=1;var b=d.body||d.documentElement;if(!b)return;
       if(!b.hasAttribute('tabindex'))b.setAttribute('tabindex','-1');b.style.outline='none';
@@ -35,7 +34,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon.svg">
-<meta name="surum" content="1.17" data-ad="OCR Stüdyo" data-tarih="22.10.2026"><style>:root{--bg:#eef0f3;--panel:#fff;--panel2:#f6f7f9;--ink:#1d2330;--ink2:#5b6475;--line:#dde1e7;--acc:#2f6fed;--acc2:#e8f0ff;--ok:#1f8a5b;--ok2:#e3f5ec;--txt:#0f7c8c;--txt2:#dff3f5;--warn:#b7791f;--err:#c2410c;--err2:#fdebe3;--run:#2f6fed;
+<meta name="surum" content="1.18" data-ad="OCR Stüdyo" data-tarih="22.10.2026"><style>:root{--bg:#eef0f3;--panel:#fff;--panel2:#f6f7f9;--ink:#1d2330;--ink2:#5b6475;--line:#dde1e7;--acc:#2f6fed;--acc2:#e8f0ff;--ok:#1f8a5b;--ok2:#e3f5ec;--txt:#0f7c8c;--txt2:#dff3f5;--warn:#b7791f;--err:#c2410c;--err2:#fdebe3;--run:#2f6fed;
   --sh:0 1px 2px rgba(20,30,50,.08),0 8px 24px -12px rgba(20,30,50,.25);--r:10px;--sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;--serif:"Tinos","Times New Roman",Georgia,serif;color-scheme:light}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15181d;--panel:#1d2128;--panel2:#242933;--ink:#e6e9ef;--ink2:#9aa3b2;--line:#2f3540;--acc:#6b9bff;--acc2:#23304a;--ok2:#17372a;--txt2:#15353a;--err2:#3d2219;color-scheme:dark}}
 :root[data-theme="dark"]{--bg:#15181d;--panel:#1d2128;--panel2:#242933;--ink:#e6e9ef;--ink2:#9aa3b2;--line:#2f3540;--acc:#6b9bff;--acc2:#23304a;--ok2:#17372a;--txt2:#15353a;--err2:#3d2219;color-scheme:dark}
