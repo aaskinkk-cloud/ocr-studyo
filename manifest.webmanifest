@@ -3,7 +3,7 @@
  "short_name": "OCR Stüdyo",
  "start_url": "./",
  "scope": "./",
- "display": "standalone",
+ "display": "fullscreen",
  "background_color": "#eef0f3",
  "theme_color": "#0f7c8c",
  "lang": "tr",
@@ -14,5 +14,9 @@
    "type": "image/svg+xml",
    "purpose": "any maskable"
   }
+ ],
+ "display_override": [
+  "fullscreen",
+  "standalone"
  ]
 }
