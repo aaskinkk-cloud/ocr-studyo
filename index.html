@@ -74,7 +74,7 @@ button{cursor:pointer;border:0;background:none}
 .wrap{max-width:980px;margin:0 auto}
 .drop{border:2px dashed var(--line);border-radius:16px;background:var(--panel);padding:34px 20px;text-align:center;transition:.15s}
 .drop.on{border-color:var(--acc);background:var(--acc2)}
-.drop svg{color:var(--acc)}
+.drop svg{color:var(--acc)}.drop .btn svg{color:inherit;width:18px;height:18px}#bSec{justify-content:center;gap:8px}
 .drop h1{font-size:21px;margin:10px 0 6px}
 .drop p{color:var(--ink2);margin:0 auto 16px;max-width:560px}
 .feat{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-top:16px;text-align:left}
@@ -1540,7 +1540,7 @@ const UI = {
   kur() {
     this.gk = innerWidth <= 860 ? 'ocr_gorsel_m' : 'ocr_gorsel'; try { const v = localStorage.getItem(this.gk); this.gorsel = v == null ? innerWidth > 860 : v === '1'; } catch (e) { this.gorsel = innerWidth > 860; }
     $('#app').innerHTML = `
-      <header class="top"><div class="logo" id="logo" title="İşler">${ic('logo', 24)}<span>OCR Stüdyo<small class="surum-et" style="font:500 11px/1.2 system-ui,sans-serif;opacity:.65;margin-left:8px;letter-spacing:.02em;white-space:nowrap">sürüm 1.13 · 15.10.2026</small></span></div><div class="pname" id="pname"></div>
+      <header class="top"><div class="logo" id="logo" title="İşler">${ic('logo', 24)}<span>OCR Stüdyo<small class="surum-et" style="font:500 11px/1.2 system-ui,sans-serif;opacity:.65;margin-left:8px;letter-spacing:.02em;white-space:nowrap">sürüm 1.19 · 30.10.2026</small></span></div><div class="pname" id="pname"></div>
         <button class="btn" id="bKlasor" title="Klasördeki PDF'leri Ad Soyad / TC ile adlandır, yazıdan cevabi yazı + tutanak, tablolar"><span style="font-size:16px;line-height:1">📂</span><span class="lbl">Klasör İşleri</span></button>
         <button class="btn" id="bYeni" title="Yeni dosya yükle">${ic('up')}<span class="lbl">Dosya Yükle</span></button>
         <button class="btn pri hid" id="bAktar">${ic('dl')}<span class="lbl">Dışa Aktar</span></button></header>

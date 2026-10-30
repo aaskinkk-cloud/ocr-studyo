@@ -1,5 +1,7 @@
 # OCR Stüdyo
 
+**1.19** (30.10.2026) — Açılış ekranındaki "Dosya seç" düğmesinde simge görünür (önceden düğme rengiyle aynıydı), simge ve yazı düğmede ortalı.
+
 ## 1.18 (23.10.2026) — Tam ekran düğmesi geri
 - Kurulu uygulamada gizlenen tam ekran düğmesi yeniden görünür ve çalışır. Düğmeye basınca Chrome kendi "Tam ekrandan çıkmak için…" uyarısını bir kez gösterir (tarayıcı kuralı). Dokununca kendiliğinden tam ekran isteği gönderilmez.
 
