@@ -1540,7 +1540,7 @@ const UI = {
   kur() {
     this.gk = innerWidth <= 860 ? 'ocr_gorsel_m' : 'ocr_gorsel'; try { const v = localStorage.getItem(this.gk); this.gorsel = v == null ? innerWidth > 860 : v === '1'; } catch (e) { this.gorsel = innerWidth > 860; }
     $('#app').innerHTML = `
-      <header class="top"><div class="logo" id="logo" title="İşler">${ic('logo', 24)}<span>OCR Stüdyo<small class="surum-et" style="font:500 11px/1.2 system-ui,sans-serif;opacity:.65;margin-left:8px;letter-spacing:.02em;white-space:nowrap">sürüm 1.20 · 06.11.2026</small></span></div><div class="pname" id="pname"></div>
+      <header class="top"><div class="logo" id="logo" title="İşler">${ic('logo', 24)}<span>OCR Stüdyo<small class="surum-et" style="font:500 11px/1.2 system-ui,sans-serif;opacity:.65;margin-left:8px;letter-spacing:.02em;white-space:nowrap">sürüm 1.21 · 06.11.2026</small></span></div><div class="pname" id="pname"></div>
         <button class="btn" id="bKlasor" title="Klasördeki PDF'leri Ad Soyad / TC ile adlandır, yazıdan cevabi yazı + tutanak, tablolar"><span style="font-size:16px;line-height:1">📂</span><span class="lbl">Klasör İşleri</span></button>
         <button class="btn" id="bYeni" title="Yeni dosya yükle">${ic('up')}<span class="lbl">Dosya Yükle</span></button>
         <button class="btn pri hid" id="bAktar">${ic('dl')}<span class="lbl">Dışa Aktar</span></button></header>
@@ -2085,6 +2085,10 @@ const Aktar = {
 .job.ts.secili{border-color:var(--acc);box-shadow:0 0 0 3px var(--acc2)}
 .tp-rapor{max-height:260px;overflow:auto;font-size:12.5px;border:1px solid var(--line);border-radius:8px;padding:6px 8px;margin-top:8px;background:var(--panel2)}
 .tp-rapor div{padding:2px 0}
+.psbar{display:flex;flex-wrap:wrap;gap:4px;align-items:center;padding:6px 8px;border-bottom:1px solid var(--line)}
+.psbar .btn{height:28px;padding:0 8px;font-size:12px;gap:4px}.psbar .psay{font-size:12px;color:var(--ink2);padding:0 2px}
+@media (max-width:860px){.grid-p.kapali .psbar{display:none}}
+.cell.psec{box-shadow:inset 0 0 0 2px var(--acc);background:var(--acc)!important;color:#fff!important}
 </style>
 <script>
 /* ===== 1.20 TOPLU İŞLEMLER =====
@@ -2239,6 +2243,56 @@ const Toplu = {
     } catch (e) { w.kapat(); toast('Excel oluşturulamadı: ' + (e.message || e), 'err', 7000); }
   }
 };
+/* ===== 1.21 İŞ EKRANI: SAYFA SEÇİMİ =====
+   Sayfa kutucuklarından birden çok sayfa seçilir (Seç modu ya da Ctrl/⌘ + tık; Shift + tık = aralık).
+   Seçili sayfalar: bütün dışa aktarım biçimleri (aralık alanı otomatik dolar), Excel – Sayfa Sayfa / Tek Sayfada Alt Alta, toplu yeniden tanıma. */
+const PSec = {
+  s: new Set(), mod: false, son: null,
+  aralik() { const a = [...this.s].sort((x, y) => x - y), o = []; for (let i = 0; i < a.length; i++) { let j = i; while (j + 1 < a.length && a[j + 1] === a[j] + 1) j++; o.push(j > i ? `${a[i] + 1}-${a[j] + 1}` : `${a[i] + 1}`); i = j; } return o.join(', '); },
+  sayfalar() { const P = UI.P; return P ? [...this.s].sort((x, y) => x - y).map(i => P.sayfalar[i]).filter(Boolean) : []; },
+  cubuk() { const g = $('#gridP'), cl = $('#cells'); if (!g || !cl) return; let b = $('#psBar');
+    if (!b) { b = document.createElement('div'); b.id = 'psBar'; b.className = 'psbar'; g.insertBefore(b, cl); }
+    const n = this.s.size, top = UI.P ? UI.P.sayfalar.length : 0;
+    b.innerHTML = `<button class="btn${this.mod ? ' pri' : ''}" id="psMod" title="Açıkken kutucuğa tıklamak sayfayı seçer. Kapalıyken de Ctrl + tık ile seçebilirsin; Shift + tık aralık seçer.">${ic('grid', 14)}${this.mod ? 'Seçim açık' : 'Sayfa seç'}</button>
+      ${this.mod || n ? `<span class="psay">${n ? `<b>${n}</b>/${top} seçili` : 'seçim yok'}</span><button class="btn" id="psTum">Tümü</button><button class="btn" id="psYok" ${n ? '' : 'disabled'}>Hiçbiri</button>
+      <button class="btn ok" id="psIs" ${n ? '' : 'disabled'}>${ic('dl', 14)}Seçilenler</button>` : ''}`;
+    $('#psMod', b).onclick = () => { this.mod = !this.mod; this.cubuk(); };
+    $('#psTum', b) && ($('#psTum', b).onclick = () => { UI.P.sayfalar.forEach(p => this.s.add(p.i)); this.boya(); });
+    $('#psYok', b) && ($('#psYok', b).onclick = () => { this.s.clear(); this.boya(); });
+    $('#psIs', b) && ($('#psIs', b).onclick = e => this.menu(e.currentTarget)); },
+  boya() { $$('#cells .cell').forEach(c => c.classList.toggle('psec', this.s.has(+c.dataset.i))); this.cubuk(); },
+  tik(e, i) { if (e.shiftKey && this.son != null) { const [a, z] = [Math.min(this.son, i), Math.max(this.son, i)]; for (let k = a; k <= z; k++) this.s.add(k); }
+    else this.s.has(i) ? this.s.delete(i) : this.s.add(i); this.son = i; this.boya(); },
+  menu(btn) { const P = UI.P; if (!P || !this.s.size) return; Editor.kaydetHemen(); const ar = this.aralik(), pdf = P.kaynaklar.some(k => k.tur === 'pdf');
+    const ak = tur => () => { const bitti = this.sayfalar().filter(p => p.durum === 'bitti').length; if (!bitti) { toast('Seçili sayfaların hiçbiri tamamlanmadı', 'err'); return; } Aktar.ac(tur); };
+    UI.menu(btn, [[ic('xls'), 'Excel – Sayfa Sayfa', `Her seçili sayfa ayrı çalışma sayfasında (${ar})`, () => this.excel('ayri')],
+      [ic('xls'), 'Excel – Tek Sayfada Alt Alta', 'Seçili sayfalar tek sayfada, sayfa başlıklarıyla', () => this.excel('tek')], '-',
+      [ic('word'), 'Word (.docx)', 'Yalnız seçili sayfalar', ak('docx')], [ic('xls'), "Excel'e gönder (.xlsx)", 'Metin, tablolar, sayfa durumu', ak('xlsx')],
+      [ic('txt'), 'Düz metin (.txt)', '', ak('txt')], [ic('pdf'), 'Aranabilir PDF', '', ak('pdfa')], [ic('pdf'), 'Metin PDF', '', ak('pdfm')], [ic('book'), 'E-kitap (.epub)', '', ak('epub')], '-',
+      [ic('retry'), 'Seçilenleri yeniden tanı', 'Geçerli ayarlarla', () => this.yeniden(false)],
+      pdf ? [ic('retry'), 'Seçilenleri OCR ile yeniden tanı', 'PDF metin katmanını yok say', () => this.yeniden(true)] : null].filter(Boolean)); },
+  async yeniden(zorla) { const P = UI.P, L = this.sayfalar(); if (!L.length) return;
+    if (Is.P && Is.P !== P && Is.durum !== 'bos' && Is.durum !== 'duraklatildi') { toast('Başka bir iş çalışıyor; önce onu duraklat', 'err'); return; }
+    const d = L.filter(p => p.durum === 'bitti' && p.duzenlendi).length;
+    if (d && !(await Dlg.onay('Seçilenleri yeniden tanı', `${d} sayfada elle yaptığın düzenlemeler yeni OCR sonucuyla değiştirilecek.`, 'Devam'))) return;
+    L.forEach(p => { p._yeniden = true; p._zorla = zorla; p.durum = 'bekliyor'; UI.hucre(p); }); UI.sayfaGoster(); Is.baslat(P, L); toast(`${L.length} sayfa yeniden tanıma sırasına alındı`, 'ok'); },
+  async excel(yontem) { const P = UI.P, L = this.sayfalar(); const ok = L.filter(p => p.durum === 'bitti');
+    if (!ok.length) { toast('Seçili sayfaların hiçbiri tamamlanmadı', 'err'); return; }
+    try { const sheets = yontem === 'tek'
+        ? [{ ad: P.ad, satirlar: (() => { const b = [P.ad + ' — Sayfa ' + this.aralik()]; b._st = 2; return [b, ...Toplu.satirlar(P, L, { sayfaBaslik: true })]; })() }]
+        : L.map(p => ({ ad: Toplu.sekmeAd(P.ad, ` - S${p.i + 1}`), satirlar: (() => { const b = [P.ad + ' — Sayfa ' + (p.i + 1)]; b._st = 2; return [b, ...Toplu.satirlar(P, [p], { sayfaBaslik: false })]; })() }));
+      const blob = await Toplu.xlsxYap(sheets), ad = `${guvenliAd(P.ad)}-s${this.aralik().replace(/\s/g, '').replace(/,/g, '_')}-${yontem === 'tek' ? 'alt-alta' : 'sayfa-sayfa'}.xlsx`.replace(/^(.{0,150}).*(\.xlsx)$/, '$1$2');
+      if (await Dosya.kaydet(ad, blob, blob.type)) toast(`Kaydedildi: ${ad} — ${ok.length} sayfa${L.length > ok.length ? ` (${L.length - ok.length} tamamlanmamış sayfa “okunmadı” notuyla)` : ''}`, 'ok', 6000);
+    } catch (e) { console.error(e); toast('Excel oluşturulamadı: ' + (e.message || e), 'err', 7000); } }
+};
+(function () {
+  const pg = UI.projeGoster; UI.projeGoster = function (P) { if (!this.P || this.P.id !== P.id) { PSec.s.clear(); PSec.son = null; } pg.call(this, P);
+    const cl = $('#cells'); if (!cl) return; const eski = cl.onclick;
+    cl.onclick = e => { const c = e.target.closest('.cell'); if (c && (PSec.mod || e.ctrlKey || e.metaKey || e.shiftKey)) { e.preventDefault(); PSec.tik(e, +c.dataset.i); return; } eski && eski.call(cl, e); };
+    PSec.boya(); };
+  const hs = UI.hucreSinif; UI.hucreSinif = function (p) { return hs.call(this, p) + (this.P && p.pid === this.P.id && PSec.s.has(p.i) ? ' psec' : ''); };
+  const ac = Aktar.ac; Aktar.ac = function (tur) { ac.call(this, tur); if (PSec.s.size && UI.P) { const x = $('#xAr'); if (x) { x.value = PSec.aralik(); x.dispatchEvent(new Event('input')); } } };
+})();
 (function () { const o = UI.isListesi; UI.isListesi = function (isler) { o.call(this, isler); try { Toplu.ciz(isler); } catch (e) { console.error(e); } }; })();
 </script>
 
