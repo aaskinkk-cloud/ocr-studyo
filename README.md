@@ -1,5 +1,7 @@
 # OCR Stüdyo
 
+**1.20** (06.11.2026) — Kayıtlı işler listesinde seçim kutuları ve toplu işlem çubuğu (Tümünü seç · Seçimi kaldır · seçili sayısı). **Toplu kaydet:** seçili işler mevcut biçimlerin herhangi biriyle (Word, Excel, metin, aranabilir PDF, metin PDF, EPUB) ayrı dosyalar hâlinde, mevcut adlandırmayla; klasör seçilebilen tarayıcıda aynı adlı dosyanın üzerine yazılmaz, "(2)" eklenir. **Excel'e aktar:** Sayfa Sayfa (her belge ya da her sayfa ayrı sekme, Excel sekme adı kurallarına uygun) / Tek Sayfada Alt Alta (belge başlığı + sayfa başlıkları, metin kaydırma, satır yüksekliği). İlerleme yüzdesi, durdurma, hatalı belgeler diğerlerini durdurmaz; sonunda başarılı/hatalı sayısı ve hata listesi.
+
 **1.19** (30.10.2026) — Açılış ekranındaki "Dosya seç" düğmesinde simge görünür (önceden düğme rengiyle aynıydı), simge ve yazı düğmede ortalı.
 
 ## 1.18 (23.10.2026) — Tam ekran düğmesi geri

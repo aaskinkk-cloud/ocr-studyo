@@ -1540,7 +1540,7 @@ const UI = {
   kur() {
     this.gk = innerWidth <= 860 ? 'ocr_gorsel_m' : 'ocr_gorsel'; try { const v = localStorage.getItem(this.gk); this.gorsel = v == null ? innerWidth > 860 : v === '1'; } catch (e) { this.gorsel = innerWidth > 860; }
     $('#app').innerHTML = `
-      <header class="top"><div class="logo" id="logo" title="İşler">${ic('logo', 24)}<span>OCR Stüdyo<small class="surum-et" style="font:500 11px/1.2 system-ui,sans-serif;opacity:.65;margin-left:8px;letter-spacing:.02em;white-space:nowrap">sürüm 1.19 · 30.10.2026</small></span></div><div class="pname" id="pname"></div>
+      <header class="top"><div class="logo" id="logo" title="İşler">${ic('logo', 24)}<span>OCR Stüdyo<small class="surum-et" style="font:500 11px/1.2 system-ui,sans-serif;opacity:.65;margin-left:8px;letter-spacing:.02em;white-space:nowrap">sürüm 1.20 · 06.11.2026</small></span></div><div class="pname" id="pname"></div>
         <button class="btn" id="bKlasor" title="Klasördeki PDF'leri Ad Soyad / TC ile adlandır, yazıdan cevabi yazı + tutanak, tablolar"><span style="font-size:16px;line-height:1">📂</span><span class="lbl">Klasör İşleri</span></button>
         <button class="btn" id="bYeni" title="Yeni dosya yükle">${ic('up')}<span class="lbl">Dosya Yükle</span></button>
         <button class="btn pri hid" id="bAktar">${ic('dl')}<span class="lbl">Dışa Aktar</span></button></header>
@@ -2071,7 +2071,178 @@ const Aktar = {
     ilerle('Kaydediliyor…', 1); return new Blob([await out.save({ useObjectStreams: true })], { type: 'application/pdf' });
   }
 };
-</script><script>if('serviceWorker' in navigator&&/github\.io$/.test(location.hostname)&&window.top===window)navigator.serviceWorker.register('sw.js').catch(function(){})
+</script>
+<style>
+/* 1.20 — Kayıtlı işler: çoklu seçim, toplu kaydetme, Excel'e toplu aktarım */
+.toplu-cubuk{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:-2px 0 10px;padding:8px 10px;border:1px solid var(--line);border-radius:12px;background:var(--panel2)}
+.toplu-cubuk .say{font-size:12.5px;color:var(--ink2);margin-right:auto;padding:0 4px}
+.toplu-cubuk .say b{color:var(--ink)}
+.job.ts{grid-template-columns:auto minmax(0,1fr) auto}
+.job.ts .jsec{grid-row:span 2;display:grid;place-items:center;padding-right:2px;cursor:pointer}
+.job.ts .jsec input{width:18px;height:18px;accent-color:var(--acc);cursor:pointer}
+.job.ts .bar{grid-column:2}
+.job.ts .a{grid-column:3}
+.job.ts.secili{border-color:var(--acc);box-shadow:0 0 0 3px var(--acc2)}
+.tp-rapor{max-height:260px;overflow:auto;font-size:12.5px;border:1px solid var(--line);border-radius:8px;padding:6px 8px;margin-top:8px;background:var(--panel2)}
+.tp-rapor div{padding:2px 0}
+</style>
+<script>
+/* ===== 1.20 TOPLU İŞLEMLER =====
+   Kayıtlı işler listesinde seçim kutuları; seçili işler için:
+   · Toplu Kaydet — mevcut biçimlerin herhangi biri (Word, Excel, metin, aranabilir PDF, metin PDF, EPUB), her iş ayrı dosya, mevcut adlandırmayla.
+     Klasör seçilebiliyorsa dosyalar o klasöre yazılır; aynı adlı dosya varsa üzerine yazılmaz, "(2)" eklenir. Seçilemiyorsa ayrı ayrı indirilir.
+   · Excel — Sayfa Sayfa (her belge ya da her sayfa ayrı çalışma sayfası) / Tek Sayfada Alt Alta.
+   Okuma motoruna, tekli dışa aktarıma ve kayıtlara dokunmaz; yalnız okur. */
+const Toplu = {
+  sec: new Set(), isler: [],
+  ciz(isler) {
+    this.isler = isler || []; const el = $('#jobs'); if (!el || !this.isler.length) { $('#topluCubuk')?.remove(); return; }
+    const varOlan = new Set(this.isler.map(x => x.id)); [...this.sec].forEach(id => { if (!varOlan.has(id)) this.sec.delete(id); });
+    let c = $('#topluCubuk'); if (!c) { c = document.createElement('div'); c.id = 'topluCubuk'; c.className = 'toplu-cubuk'; el.parentNode.insertBefore(c, el); }
+    c.innerHTML = `<span class="say" id="tpSay"></span>
+      <button class="btn" id="tpTum">${ic('grid', 16)}Tümünü seç</button><button class="btn" id="tpYok">Seçimi kaldır</button>
+      <button class="btn" id="tpKay">${ic('dl', 16)}Toplu kaydet</button><button class="btn ok" id="tpXls">${ic('xls', 16)}Excel'e aktar</button>`;
+    el.querySelectorAll('.job').forEach(j => { if (j.querySelector('.jsec')) return; j.classList.add('ts');
+      const l = document.createElement('label'); l.className = 'jsec'; l.title = 'Seç'; l.innerHTML = `<input type="checkbox" aria-label="Seç">`;
+      const cb = l.querySelector('input'); cb.checked = this.sec.has(j.dataset.id);
+      l.addEventListener('click', e => e.stopPropagation()); cb.addEventListener('change', () => { cb.checked ? this.sec.add(j.dataset.id) : this.sec.delete(j.dataset.id); this.durum(); });
+      j.insertBefore(l, j.firstChild); });
+    $('#tpTum').onclick = () => { this.isler.forEach(x => this.sec.add(x.id)); this.kutular(); };
+    $('#tpYok').onclick = () => { this.sec.clear(); this.kutular(); };
+    $('#tpKay').onclick = e => this.kaydetMenu(e.currentTarget);
+    $('#tpXls').onclick = e => UI.menu(e.currentTarget, [
+      [ic('xls'), 'Excel – Sayfa Sayfa', 'Her belge ayrı çalışma sayfasında (istersen her sayfa ayrı)', () => this.excelSor('ayri')],
+      [ic('xls'), 'Excel – Tek Sayfada Alt Alta', 'Bütün belgeler tek sayfada, belge ve sayfa başlıklarıyla', () => this.excelSor('tek')]]);
+    this.durum();
+  },
+  kutular() { $$('#jobs .job').forEach(j => { const cb = j.querySelector('.jsec input'); if (cb) cb.checked = this.sec.has(j.dataset.id); }); this.durum(); },
+  durum() { const n = this.sec.size; const s = $('#tpSay'); if (s) s.innerHTML = n ? `<b>${n}</b> / ${this.isler.length} iş seçili` : `${this.isler.length} iş · seçim yok`;
+    ['tpKay', 'tpXls', 'tpYok'].forEach(id => { const b = $('#' + id); if (b) b.disabled = !n; });
+    $$('#jobs .job').forEach(j => j.classList.toggle('secili', this.sec.has(j.dataset.id))); },
+  seciliIsler() { return this.isler.filter(x => this.sec.has(x.id)); },
+  async yukle(id) { const r = await DB.get('isler', id); if (!r) throw new Error('iş bulunamadı'); const P = new ProjeK(r);
+    P.sayfalar = (await DB.sayfalar(id)).sort((a, b) => a.i - b.i).map(x => new SayfaK(x)); return P; },
+  /* ---------- ilerleme penceresi ---------- */
+  pencere(baslik) { const b = document.createElement('div'); b.className = 'modal';
+    b.innerHTML = `<div class="dlg" style="width:min(420px,100%)"><div class="dlg-b"><b>${esc(baslik)}</b><div id="tpMsg" style="margin-top:6px;font-size:13px;color:var(--ink2)">Hazırlanıyor…</div>
+      <div class="bar" style="margin-top:10px"><b id="tpBar" style="width:0"></b></div><div id="tpYuz" style="font-size:12px;color:var(--ink2);margin-top:4px">%0</div>
+      <div style="text-align:right;margin-top:10px"><button class="btn" id="tpIptal">Durdur</button></div></div></div>`;
+    document.body.appendChild(b); const o = { iptal: false, el: b, yaz(m, r) { $('#tpMsg', b).textContent = m; if (r != null) { const y = Math.round(clamp(r, 0, 1) * 100); $('#tpBar', b).style.width = y + '%'; $('#tpYuz', b).textContent = '%' + y; } }, kapat() { b.remove(); } };
+    $('#tpIptal', b).onclick = () => { o.iptal = true; $('#tpIptal', b).disabled = true; $('#tpIptal', b).textContent = 'Durduruluyor…'; }; return o; },
+  rapor(baslik, ok, hatalar, ek) { /* ek: başarı sonrası not */
+    Dlg.ac({ baslik, govde: `<div>✓ Başarılı: <b>${ok}</b> belge · ✗ Hatalı: <b style="color:${hatalar.length ? 'var(--err)' : 'inherit'}">${hatalar.length}</b> belge</div>${ok && ek ? `<div class="hint" style="margin-top:6px">${ek}</div>` : ''}
+      ${hatalar.length ? `<div class="tp-rapor">${hatalar.map(h => `<div>✗ <b>${esc(h.ad)}</b> — ${esc(h.hata)}</div>`).join('')}</div>` : ''}`, butonlar: [{ metin: 'Tamam', pri: true }] }); },
+  /* ---------- toplu kaydet ---------- */
+  kaydetMenu(btn) { if (!this.sec.size) { toast('Önce iş seç', 'err'); return; }
+    UI.menu(btn, [[ic('word'), 'Word (.docx)', 'Her iş ayrı dosya', () => this.kaydet('docx')],
+      [ic('xls'), "Excel (.xlsx)", 'Her iş ayrı dosya — metin, tablolar, sayfa durumu', () => this.kaydet('xlsx')],
+      [ic('txt'), 'Düz metin (.txt)', 'UTF-8', () => this.kaydet('txt')],
+      [ic('pdf'), 'Aranabilir PDF', 'Özgün görüntü + seçilebilir metin', () => this.kaydet('pdfa')],
+      [ic('pdf'), 'Metin PDF', 'Düzenlenmiş metinden yeni PDF', () => this.kaydet('pdfm')],
+      [ic('book'), 'E-kitap (.epub)', 'Bölümlere ayrılmış', () => this.kaydet('epub')]]); },
+  async hedefKlasor() { if (!window.showDirectoryPicker) return null;
+    try { return await showDirectoryPicker({ id: 'ocr-toplu', mode: 'readwrite' }); } catch (e) { if (e && e.name === 'AbortError') throw e; return null; } },
+  async benzersiz(dir, ad) { const m = ad.match(/^(.*?)(\.[^.]+)?$/), kok = m[1], uz = m[2] || ''; let a = ad, n = 2;
+    while (true) { try { await dir.getFileHandle(a); a = `${kok} (${n++})${uz}`; } catch (e) { if (e && e.name === 'NotFoundError') return a; if (e && e.name === 'TypeMismatchError') { a = `${kok} (${n++})${uz}`; continue; } throw e; } } },
+  async dosyaUret(tur, P, ilerle) {
+    const liste = P.sayfalar.filter(p => p.durum === 'bitti'); if (!liste.length) throw new Error('tamamlanan sayfa yok');
+    const kitap = P.kaynaklar.some(k => k.tur === 'pdf') && P.sayfalar.length > 8;
+    const o = { kitap: tur !== 'pdfa' && tur !== 'xlsx' ? kitap : false, ayrac: tur === 'epub' || tur === 'pdfa' || tur === 'xlsx' ? false : !kitap, baslik: P.ad, yazar: '', bolum: 'baslik' };
+    const temel = guvenliAd(P.ad) + (liste.length < P.sayfalar.length ? `-s${liste[0].i + 1}-${liste[liste.length - 1].i + 1}` : '');
+    if (tur === 'txt') return [temel + '.txt', new Blob(['﻿' + Aktar.txt(P, liste, o)], { type: 'text/plain;charset=utf-8' })];
+    if (tur === 'docx') return [temel + '.docx', await Aktar.docx(P, liste, o)];
+    if (tur === 'xlsx') return [temel + '.xlsx', await Aktar.xlsx(P, liste)];
+    if (tur === 'epub') return [guvenliAd(o.baslik) + '.epub', await Aktar.epub(P, liste, o)];
+    if (tur === 'pdfa') { const v = await Aktar.pdfAranabilir(P, liste, ilerle); return [temel + '-aranabilir.pdf', v instanceof Blob ? v : new Blob([v], { type: 'application/pdf' })]; }
+    const v = await Aktar.pdfMetin(P, liste, o, ilerle); return [temel + '-metin.pdf', v instanceof Blob ? v : new Blob([v], { type: 'application/pdf' })];
+  },
+  indir(ad, blob) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = ad; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 60000); },
+  async kaydet(tur) {
+    const isler = this.seciliIsler(); if (!isler.length) { toast('Önce iş seç', 'err'); return; }
+    let dir = null; try { dir = await this.hedefKlasor(); } catch (e) { return; }
+    const w = this.pencere(`Toplu kaydet — ${isler.length} iş`); let ok = 0; const hatalar = [], yollar = [];
+    for (let i = 0; i < isler.length; i++) { if (w.iptal) break; const x = isler[i];
+      const alt = (m, r) => w.yaz(`${i + 1}/${isler.length} · ${x.ad} — ${m}`, (i + (r || 0)) / isler.length);
+      try { w.yaz(`${i + 1}/${isler.length} · ${x.ad}`, i / isler.length); await wait(30);
+        const P = await this.yukle(x.id); const [ad, blob] = await this.dosyaUret(tur, P, alt);
+        if (dir) { const ad2 = await this.benzersiz(dir, ad); const fh = await dir.getFileHandle(ad2, { create: true }); const yw = await fh.createWritable(); await yw.write(blob); await yw.close(); yollar.push(ad2); }
+        else { this.indir(ad, blob); yollar.push(ad); await wait(700); }
+        ok++; } catch (e) { console.error(e); hatalar.push({ ad: x.ad, hata: e && e.message || String(e) }); }
+      await wait(0); }
+    w.yaz('Bitti', 1); w.kapat();
+    this.rapor('Toplu kaydetme', ok, hatalar, dir ? `Dosyalar “${esc(dir.name)}” klasörüne kaydedildi; aynı adlı dosyaların üzerine yazılmadı.` : 'Dosyalar İndirilenler klasörüne indirildi (tarayıcı “birden çok dosya indirme” izni sorarsa izin ver).');
+    if (w.iptal) toast('Durduruldu — işlenen kadarı kaydedildi', 'err', 5000);
+  },
+  /* ---------- Excel'e toplu aktarım ---------- */
+  excelSor(yontem) { if (!this.sec.size) { toast('Önce iş seç', 'err'); return; }
+    if (yontem === 'tek') { this.excel('tek', false); return; }
+    Dlg.ac({ baslik: 'Excel – Sayfa Sayfa', govde: `<div class="hint">Her seçili belge ayrı çalışma sayfasında; belge içindeki sayfalar "Sayfa 1, Sayfa 2…" başlıklarıyla ayrılır.</div>
+      <label class="chk"><input type="checkbox" id="tpHerSayfa"><span>Belgenin her sayfası ayrı çalışma sayfası olsun<small>Sekme adı: belge adı + sayfa no (Excel sınırı 31 karakter)</small></span></label>`,
+      butonlar: [{ metin: 'Vazgeç' }, { metin: `${ic('xls', 16)} Oluştur`, pri: true, fn: m => { const h = $('#tpHerSayfa', m).checked; setTimeout(() => this.excel('ayri', h), 20); } }] }); },
+  satirlar(P, sayfalar, opt) { /* bir belgenin satırları: [hücreler] ; ._st: stil (1 kalın başlık, 2 belge başlığı, 3 metin) */
+    const out = [];
+    for (const p of sayfalar) {
+      if (opt.sayfaBaslik) { const r = [`Sayfa ${p.i + 1}`]; r._st = 1; out.push(r); }
+      if (p.durum !== 'bitti') { const r = ['', `(Bu sayfa okunmadı: ${({ hata: 'hata', bekliyor: 'bekliyor', isleniyor: 'işleniyor' })[p.durum] || p.durum})`]; r._st = 3; out.push(r); continue; }
+      let bl = []; try { bl = Yapi.bloklar(p.html); } catch (e) { bl = [{ t: 'p', x: String(p.html || '').replace(/<[^>]+>/g, ' ') }]; }
+      for (const b of bl) {
+        if (b.t === 'tbl') { b.r.forEach(rr => { const r = [''].concat(rr.map(c => String(c ?? ''))); r._st = 0; out.push(r); }); out.push([]); continue; }
+        /* uzun paragraf: ~2500 karakterlik parçalara (boşluktan) bölünür → satır yüksekliği Excel sınırına (409 pt) sığar, metin eksilmez */
+        let x = String(b.x || ''); if (!x.trim()) continue;
+        while (x.length) { let n = x.length; if (n > 2500) { n = x.lastIndexOf(' ', 2500); if (n < 1500) n = 2500; }
+          const r = ['', x.slice(0, n)]; r._st = b.t === 'h' ? 4 : 3; out.push(r); x = x.slice(n).replace(/^ /, ''); }
+      }
+    }
+    return out;
+  },
+  sekmeAd(ad, ek) { const t = String(ad || 'Belge').replace(/[\[\]:*?\/\\]/g, ' ').replace(/^'+|'+$/g, '').replace(/\s+/g, ' ').trim() || 'Belge'; return t.slice(0, 31 - ek.length).trim() + ek; },
+  xlsxYap(sayfalar) { /* sayfalar: [{ad, satirlar}] — geçerli .xlsx (JSZip), metin kaydırma, tahmini satır yüksekliği */
+    const X = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '');
+    const kol = i => { let s = ''; i++; while (i) { const m = (i - 1) % 26; s = String.fromCharCode(65 + m) + s; i = (i - m - 1) / 26; } return s; };
+    const GEN_B = 110;
+    const ws = rows => { const nc = Math.max(2, ...rows.map(r => r.length));
+      let x = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><cols><col min="1" max="1" width="12" customWidth="1"/><col min="2" max="2" width="' + GEN_B + '" customWidth="1"/>' + (nc > 2 ? `<col min="3" max="${nc}" width="22" customWidth="1"/>` : '') + '</cols><sheetData>';
+      rows.forEach((r, i) => { if (!r.length) { x += `<row r="${i + 1}"/>`; return; }
+        const st = r._st === 1 ? 1 : r._st === 2 ? 2 : r._st === 4 ? 4 : 3;
+        let sat = 1; r.forEach((v, c) => { const t = String(v ?? ''); if (!t) return; const gen = c === 1 ? GEN_B : c === 0 ? 12 : 22; const s = t.split('\n').reduce((a, l) => a + Math.max(1, Math.ceil(l.length * 1.05 / gen)), 0); if (s > sat) sat = s; });
+        const ht = Math.min(409, Math.max(15, sat * 15));
+        x += `<row r="${i + 1}" ht="${ht}" customHeight="1">` + r.map((v, c) => { const t = String(v ?? ''); if (!t) return ''; return `<c r="${kol(c)}${i + 1}" t="inlineStr" s="${st}"><is><t xml:space="preserve">${X(t)}</t></is></c>`; }).join('') + '</row>'; });
+      return x + '</sheetData></worksheet>'; };
+    const adlar = new Set(); sayfalar.forEach(s => { let a = String(s.ad || 'Sayfa').replace(/[\[\]:*?\/\\]/g, ' ').replace(/^'+|'+$/g, '').replace(/\s+/g, ' ').trim().slice(0, 31) || 'Sayfa', n = 2;
+      while (adlar.has(a.toLocaleLowerCase('tr'))) { const ek = ` (${n++})`; a = a.slice(0, 31 - ek.length) + ek; } adlar.add(a.toLocaleLowerCase('tr')); s.ad = a; });
+    const z = new JSZip();
+    z.file('[Content_Types].xml', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>' + sayfalar.map((_, i) => `<Override PartName="/xl/worksheets/sheet${i + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('') + '</Types>');
+    z.file('_rels/.rels', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>');
+    z.file('xl/workbook.xml', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>' + sayfalar.map((s, i) => `<sheet name="${X(s.ad)}" sheetId="${i + 1}" r:id="rId${i + 1}"/>`).join('') + '</sheets></workbook>');
+    z.file('xl/_rels/workbook.xml.rels', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' + sayfalar.map((_, i) => `<Relationship Id="rId${i + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i + 1}.xml"/>`).join('') + `<Relationship Id="rId${sayfalar.length + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`);
+    /* stiller: 0 normal · 1 kalın (sayfa başlığı) · 2 belge başlığı (kalın, büyük, dolgulu) · 3 metin (kaydırmalı, üste hizalı) · 4 başlık satırı (kalın, kaydırmalı) */
+    z.file('xl/styles.xml', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="3"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="13"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font></fonts><fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF2F6FED"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="5"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/><xf numFmtId="0" fontId="2" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1"/><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>');
+    sayfalar.forEach((s, i) => z.file(`xl/worksheets/sheet${i + 1}.xml`, ws(s.satirlar)));
+    return z.generateAsync({ type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', compression: 'DEFLATE' });
+  },
+  async excel(yontem, herSayfa) {
+    const isler = this.seciliIsler(); if (!isler.length) { toast('Önce iş seç', 'err'); return; }
+    const w = this.pencere(`Excel'e aktarım — ${isler.length} belge`); const sheets = [], tek = []; let ok = 0; const hatalar = [];
+    for (let i = 0; i < isler.length; i++) { if (w.iptal) break; const x = isler[i]; w.yaz(`${i + 1}/${isler.length} · ${x.ad}`, i / isler.length); await wait(10);
+      try { const P = await this.yukle(x.id); const sy = P.sayfalar; if (!sy.some(p => p.durum === 'bitti')) throw new Error('tamamlanan sayfa yok');
+        if (yontem === 'tek') { if (tek.length) tek.push([]); const b = [P.ad]; b._st = 2; tek.push(b); tek.push(...this.satirlar(P, sy, { sayfaBaslik: true })); }
+        else if (herSayfa) sy.forEach(p => sheets.push({ ad: this.sekmeAd(P.ad, ` - S${p.i + 1}`), satirlar: (() => { const b = [P.ad + ' — Sayfa ' + (p.i + 1)]; b._st = 2; return [b, ...this.satirlar(P, [p], { sayfaBaslik: false })]; })() }));
+        else { const b = [P.ad]; b._st = 2; sheets.push({ ad: P.ad, satirlar: [b, ...this.satirlar(P, sy, { sayfaBaslik: true })] }); }
+        ok++; } catch (e) { console.error(e); hatalar.push({ ad: x.ad, hata: e && e.message || String(e) }); } }
+    if (yontem === 'tek' && tek.length) sheets.push({ ad: 'Tüm belgeler', satirlar: tek });
+    if (!sheets.length) { w.kapat(); this.rapor("Excel'e aktarım", 0, hatalar, ''); return; }
+    w.yaz('Excel dosyası oluşturuluyor…', .97); await wait(20);
+    try { const blob = await this.xlsxYap(sheets); w.kapat();
+      const g = new Date(), ik = n => String(n).padStart(2, '0'), ad = `OCR-toplu-${ok}-belge-${yontem === 'tek' ? 'alt-alta' : herSayfa ? 'her-sayfa' : 'sayfa-sayfa'}-${g.getFullYear()}${ik(g.getMonth() + 1)}${ik(g.getDate())}.xlsx`;
+      const kaydedildi = await Dosya.kaydet(ad, blob, blob.type);
+      if (kaydedildi) { this.rapor("Excel'e aktarım", ok, hatalar, `<b>${esc(ad)}</b> (${fmtBytes(blob.size)}) kaydedildi. Kaydettiğin yerden çift tıklayınca Excel'de açılır; Excel yoksa LibreOffice veya Google E-Tablolar ile açılabilir.`); }
+    } catch (e) { w.kapat(); toast('Excel oluşturulamadı: ' + (e.message || e), 'err', 7000); }
+  }
+};
+(function () { const o = UI.isListesi; UI.isListesi = function (isler) { o.call(this, isler); try { Toplu.ciz(isler); } catch (e) { console.error(e); } }; })();
+</script>
+
+<script>if('serviceWorker' in navigator&&/github\.io$/.test(location.hostname)&&window.top===window)navigator.serviceWorker.register('sw.js').catch(function(){})
 /* ---------------- 1.1: Klasör İşleri (PDF toplu isimlendirme · cevabi yazı + tutanak · tablolar) ----------------
    Ayrı bir çerçevede çalışır; pdf.js ve Türkçe OCR modeli OCR Stüdyo'nun gömülü motorundan kullanılır. */
 window.OCRS = { motor: Motor, pdfjsKur: () => pdfjsKur(),
